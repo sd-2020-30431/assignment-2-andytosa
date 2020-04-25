@@ -3,7 +3,7 @@ from FoodItem import FoodItem
 
 class ServerCommand:
     def registerUser(self, user):
-        return f"INSERT INTO users (username, password, email) VALUES ({user.username}, {user.password}, {user.email});"
+        return f"INSERT INTO users (username, password, email) VALUES ('{user.username}', '{user.password}', '{user.email}');"
 
 
     def addFood(self, food):

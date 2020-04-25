@@ -1,5 +1,6 @@
 import socket
 import select
+import sqlite3
 
 HEADER_LENGTH = 10
 
@@ -17,6 +18,8 @@ clients = {}
 
 print(f'Listening for connections on {IP}:{PORT}')
 
+connection = sqlite3.connect('a2.db')
+cursor = connection.cursor()
 
 def receive_message(client_socket):
     try:
@@ -24,7 +27,6 @@ def receive_message(client_socket):
         if not len(message_header):
             return False
         
-        print(message_header.decode('utf-8'))
         message_length = int(message_header.decode('utf-8'))
         return {'header': message_header, 'data': client_socket.recv(message_length)}
 
@@ -49,35 +51,23 @@ while True:
             print(client_address)
             print('Accepted new connection from {}:{}'.format(*client_address))
 
-        # Else existing socket is sending a message
         else:
 
-            # Receive message
             message = receive_message(notified_socket)
 
-            # If False, client disconnected, cleanup
             if message is False:
                 print('Closed connection from {}'.format(clients[notified_socket]))
-
-                # Remove from list for socket.socket()
                 sockets_list.remove(notified_socket)
-
-                # Remove from our list of users
                 del clients[notified_socket]
-
                 continue
 
-            # Get user by notified socket, so we will know who sent the message
             user = clients[notified_socket]
-
             print(f'Received message from {user}: {message["data"].decode("utf-8")}')
 
+            sv_command = message['data'].decode('utf-8')
+            cursor.execute(sv_command)
+            connection.commit()
 
-    # It's not really necessary to have this, but will handle some socket exceptions just in case
     for notified_socket in exception_sockets:
-
-        # Remove from list for socket.socket()
         sockets_list.remove(notified_socket)
-
-        # Remove from our list of users
         del clients[notified_socket]
