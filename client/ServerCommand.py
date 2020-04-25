@@ -16,6 +16,11 @@ class ServerCommand:
             {food.user_id}
             );"""
     
+    
+    def selectFood(self, user_id):
+        return f"SELECT * FROM foods WHERE foods.user_id = {user_id}"
+
+
     def getCommand(self, action):
         if action == 'register':
             username = input('username: ')
@@ -23,6 +28,10 @@ class ServerCommand:
             email = input('email: ')
 
             return self.registerUser(User(username, password, email))
+        
+        if action == 'select':
+            user_id = input('user_id')
 
+            return self.selectFood(user_id)
 
 

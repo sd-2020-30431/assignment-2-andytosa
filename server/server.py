@@ -68,6 +68,15 @@ while True:
             cursor.execute(sv_command)
             connection.commit()
 
+            if sv_command[:6] == 'SELECT':
+                row = cursor.fetchone()
+                data = {}
+                while row is not None:
+                    id = row[0]
+                    data[id] = row[1:-1]
+                    print(id, data[id])
+                    row = cursor.fetchone()
+
     for notified_socket in exception_sockets:
         sockets_list.remove(notified_socket)
         del clients[notified_socket]
