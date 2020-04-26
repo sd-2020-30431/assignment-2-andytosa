@@ -1,6 +1,7 @@
 import socket
 import select
 import sqlite3
+import pickle
 
 HEADER_LENGTH = 10
 
@@ -40,19 +41,14 @@ while True:
 
     for notified_socket in read_sockets:
         if notified_socket == server_socket:
-
-            # The other returned object is ip/port set
             client_socket, client_address = server_socket.accept()
 
-            # Add accepted socket to select.select() list
             sockets_list.append(client_socket)
-            
             clients[client_socket] = client_address
-            print(client_address)
+
             print('Accepted new connection from {}:{}'.format(*client_address))
 
         else:
-
             message = receive_message(notified_socket)
 
             if message is False:
@@ -69,13 +65,10 @@ while True:
             connection.commit()
 
             if sv_command[:6] == 'SELECT':
-                row = cursor.fetchone()
-                data = {}
-                while row is not None:
-                    id = row[0]
-                    data[id] = row[1:-1]
-                    print(id, data[id])
-                    row = cursor.fetchone()
+                rows = cursor.fetchall()
+                data = pickle.dumps(rows)
+                notified_socket.send(f'{len(data):<{HEADER_LENGTH}}'.encode('utf-8') + data)
+
 
     for notified_socket in exception_sockets:
         sockets_list.remove(notified_socket)
